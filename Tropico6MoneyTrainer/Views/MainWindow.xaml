@@ -1,0 +1,30 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Tropico6MoneyTrainer.Views"
+        xmlns:viewModels="clr-namespace:Tropico6MoneyTrainer.ViewModels" x:Class="Tropico6MoneyTrainer.Views.MainWindow"
+        mc:Ignorable="d"
+        Title="Tropico 6 - Money Hack Trainer" Height="450" Width="800" Background="#F3878787">
+    <Window.DataContext>
+        <viewModels:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="../Resources/Tropico_6_Logo.jpg" Stretch="Fill"/>
+
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <Label HorizontalAlignment="Center" ContentStringFormat="Status: {0}" Content="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" IsEnabled="False"/>
+        </StackPanel>
+
+    </Grid>
+</Window>
