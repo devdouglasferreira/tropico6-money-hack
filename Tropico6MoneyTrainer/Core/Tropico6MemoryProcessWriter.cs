@@ -1,48 +1,73 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
+using Tropico6MoneyTrainer.Core.Helpers;
 
 namespace Tropico6MoneyTrainer.Core
 {
     public class Tropico6MemoryProcessWriter : IDisposable
     {
-        private int[] _offsets = new int[] { 0x03CE4AD0, 0x8F0, 0xE30, 0x498, 0x3B8, 0x230, 0x9D8 };
+        private readonly int _treasuryFirstOffset = 0x03CE4AD0;
+        private readonly int[] _treasuryOffsets = { 0x30, 0x8F0, 0xE30, 0x498, 0x3B8, 0x230, 0x9D8 };
         
-        private IntPtr _gameBaseMemoryAddress;
         private Process _gameProcess;
-        public bool IsGameLoaded { get; set; }
-        public bool IsTargetAddresfound { get; set; }
+        private IntPtr _treasuryMemoryAddress;
+        private IntPtr _swissBankAccountAddress;
 
-        public Tropico6MemoryProcessWriter() { }
+        public bool IsGameLoaded { get; set; }
+        public bool IsTargetAddressfound { get; set; }
+        public bool IsSetupComplete => IsGameLoaded & IsTargetAddressfound;
 
         public bool TryLoadProcess()
         {
-            _gameProcess = Process.GetProcesses("Tropico6")?.FirstOrDefault();
-            _gameBaseMemoryAddress = _gameProcess?.MainModule?.BaseAddress ?? default;
+            _gameProcess = Process.GetProcessesByName("Tropico6-Win64-Shipping").FirstOrDefault();
 
-            if (_gameProcess != null && _gameBaseMemoryAddress != default)
-            {
+            if (_gameProcess != null)
                 IsGameLoaded = true;
-                return true;
-            }
-            else
+
+            return IsGameLoaded;
+        }
+
+        public bool TryGetTargetMemoryPointers()
+        {
+            try
             {
-                return false;
+                long baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + _treasuryFirstOffset ?? 0;
+                long processingAddress = baseAddress;
+
+                foreach (var offset in _treasuryOffsets)
+                    processingAddress = ExternalMemoryAccess.ReadInt64(_gameProcess.Handle, (IntPtr)processingAddress) + offset;
+
+                _treasuryMemoryAddress = (IntPtr)processingAddress;
+
+                IsTargetAddressfound = true;
+                return IsTargetAddressfound;
+            }
+            catch 
+            {
+                return IsTargetAddressfound;
             }
         }
-        
-        [DllImport("kernetl32.dll", SetLastError = true)]
-        private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesWritten);
+        public float GetTreasury()
+        {
+            byte[] buffer = new byte[4];
+            ExternalMemoryAccess.ReadProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out IntPtr bytesRead);
+            return BitConverter.ToSingle(buffer, 0);
+        }
+
+        public void OverrideTreasury(float amount)
+        {
+            byte[] buffer = BitConverter.GetBytes(amount);
+            ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out IntPtr bytesWritten);
+        }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         private void Dispose(bool disposing)
         {
             ReleaseUnmanagedResources();
@@ -54,8 +79,8 @@ namespace Tropico6MoneyTrainer.Core
 
         private void ReleaseUnmanagedResources()
         {
-            _gameBaseMemoryAddress = IntPtr.Zero;
             _gameProcess.Dispose();
+            _treasuryMemoryAddress = IntPtr.Zero;
         }
 
         ~Tropico6MemoryProcessWriter()

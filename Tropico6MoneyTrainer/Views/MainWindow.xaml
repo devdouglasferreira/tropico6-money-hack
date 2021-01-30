@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Tropico6MoneyTrainer.Views"
         xmlns:viewModels="clr-namespace:Tropico6MoneyTrainer.ViewModels" x:Class="Tropico6MoneyTrainer.Views.MainWindow"
         mc:Ignorable="d"
-        Title="Tropico 6 - Money Hack Trainer" Height="450" Width="800" Background="#F3878787">
+        Title="Tropico 6 - Money Hack Trainer" Height="450" Width="800" Background="#F3878787" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <viewModels:MainWindowViewModel/>
     </Window.DataContext>
@@ -23,7 +23,8 @@
         <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="../Resources/Tropico_6_Logo.jpg" Stretch="Fill"/>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
-            <Label HorizontalAlignment="Center" ContentStringFormat="Status: {0}" Content="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" IsEnabled="False"/>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" Height="96" />
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Path=BankAccount}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}"  />
         </StackPanel>
 
     </Grid>
