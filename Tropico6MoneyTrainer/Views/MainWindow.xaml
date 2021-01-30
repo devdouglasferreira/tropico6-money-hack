@@ -4,9 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Tropico6MoneyTrainer.Views"
-        xmlns:viewModels="clr-namespace:Tropico6MoneyTrainer.ViewModels" x:Class="Tropico6MoneyTrainer.Views.MainWindow"
+        xmlns:viewModels="clr-namespace:Tropico6MoneyTrainer.ViewModels" x:Name="MainWindow1" x:Class="Tropico6MoneyTrainer.Views.MainWindow"
         mc:Ignorable="d"
-        Title="Tropico 6 - Money Hack Trainer" Height="450" Width="800" Background="#F3878787" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+        Title="Tropico 6 - Money Hack Trainer" Height="450" Width="800" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="#FF4B4747" Offset="1"/>
+            <GradientStop Color="#FFACACAC" Offset="0.567"/>
+
+        </LinearGradientBrush>
+    </Window.Background>
     <Window.DataContext>
         <viewModels:MainWindowViewModel/>
     </Window.DataContext>
@@ -23,8 +30,29 @@
         <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="../Resources/Tropico_6_Logo.jpg" Stretch="Fill"/>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
-            <TextBlock HorizontalAlignment="Center" Text="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" Height="96" />
-            <TextBlock HorizontalAlignment="Center" Text="{Binding Path=BankAccount}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}"  />
+            <TextBlock Margin="0, 10, 0, 10" TextWrapping="Wrap" HorizontalAlignment="Center" Text="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" TextAlignment="Left" />
+
+            <TextBlock HorizontalAlignment="Center" TextAlignment="Left" Text="{Binding Path=Treasury, StringFormat=Treasury ${0:f0}}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}"  />
+            <TextBox  Margin="2" HorizontalAlignment="Center" Text="{Binding Path=TreasuryIncrease, Mode=TwoWay}" MinWidth="96"></TextBox>
+            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseTreasuryCommand}">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+                Increase Treasury
+            </Button>
+
+            <TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" TextAlignment="Left" Text="{Binding Path=SwissBank, StringFormat=Swiss Bank S${0:f0}}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" />
+            <TextBox Margin="2" HorizontalAlignment="Center" Text="{Binding Path=SwissBankIncrease, Mode=TwoWay, StringFormat={}{0:F2}}" MinWidth="96"></TextBox>
+            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseSwissBankCommand}">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+                Increase Swiss Bank
+            </Button>
         </StackPanel>
 
     </Grid>

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Tropico6MoneyTrainer.Annotations;
 
-namespace Tropico6MoneyTrainer.ViewModels
+namespace Tropico6MoneyTrainer.ViewModels.Abstractions
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

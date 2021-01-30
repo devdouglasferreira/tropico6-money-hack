@@ -52,14 +52,14 @@ namespace Tropico6MoneyTrainer.Core
         public float GetTreasury()
         {
             byte[] buffer = new byte[4];
-            ExternalMemoryAccess.ReadProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out IntPtr bytesRead);
+            _ = ExternalMemoryAccess.ReadProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out _);
             return BitConverter.ToSingle(buffer, 0);
         }
 
-        public void OverrideTreasury(float amount)
+        public void OverrideTreasure(float amount)
         {
             byte[] buffer = BitConverter.GetBytes(amount);
-            ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out IntPtr bytesWritten);
+            ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out _);
         }
 
         public void Dispose()
@@ -81,6 +81,7 @@ namespace Tropico6MoneyTrainer.Core
         {
             _gameProcess.Dispose();
             _treasuryMemoryAddress = IntPtr.Zero;
+            _swissBankAccountAddress = IntPtr.Zero;
         }
 
         ~Tropico6MemoryProcessWriter()
