@@ -9,14 +9,17 @@ namespace Tropico6MoneyTrainer.Core
     {
         private readonly int _treasuryFirstOffset = 0x03CE4AD0;
         private readonly int[] _treasuryOffsets = { 0x30, 0x8F0, 0xE30, 0x498, 0x3B8, 0x230, 0x9D8 };
-        
+
+        private readonly int _swissBankAccountFirstOffset = 0x03BE0B00;
+        private readonly int[] _swissBankAccountOffsets = { 0x28, 0xC78, 0x10, 0x1A0, 0x20, 0x238, 0x9E0 };
+
         private Process _gameProcess;
         private IntPtr _treasuryMemoryAddress;
         private IntPtr _swissBankAccountAddress;
 
-        public bool IsGameLoaded { get; set; }
-        public bool IsTargetAddressfound { get; set; }
-        public bool IsSetupComplete => IsGameLoaded & IsTargetAddressfound;
+        public bool IsGameLoaded { get; private set; }
+        public bool IsTargetAddressesFound { get; private set; }
+        public bool IsSetupComplete => IsGameLoaded & IsTargetAddressesFound;
 
         public bool TryLoadProcess()
         {
@@ -36,16 +39,24 @@ namespace Tropico6MoneyTrainer.Core
                 long processingAddress = baseAddress;
 
                 foreach (var offset in _treasuryOffsets)
-                    processingAddress = ExternalMemoryAccess.ReadInt64(_gameProcess.Handle, (IntPtr)processingAddress) + offset;
+                    processingAddress = ExternalMemoryAccess.ReadInt64(_gameProcess?.Handle ?? IntPtr.Zero, (IntPtr)processingAddress) + offset;
 
                 _treasuryMemoryAddress = (IntPtr)processingAddress;
 
-                IsTargetAddressfound = true;
-                return IsTargetAddressfound;
+                baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + _swissBankAccountFirstOffset ?? 0;
+                processingAddress = baseAddress;
+
+                foreach (var offset in _swissBankAccountOffsets)
+                    processingAddress = ExternalMemoryAccess.ReadInt64(_gameProcess?.Handle ?? IntPtr.Zero, (IntPtr)processingAddress) + offset;
+
+                _swissBankAccountAddress = (IntPtr)processingAddress;
+
+                IsTargetAddressesFound = true;
+                return IsTargetAddressesFound;
             }
             catch 
             {
-                return IsTargetAddressfound;
+                return IsTargetAddressesFound;
             }
         }
 
@@ -56,10 +67,23 @@ namespace Tropico6MoneyTrainer.Core
             return BitConverter.ToSingle(buffer, 0);
         }
 
+        public float GetSwissBankAccount()
+        {
+            byte[] buffer = new byte[4];
+            _ = ExternalMemoryAccess.ReadProcessMemory(_gameProcess.Handle, _swissBankAccountAddress, buffer, buffer.Length, out _);
+            return BitConverter.ToSingle(buffer, 0);
+        }
+
         public void OverrideTreasure(float amount)
         {
             byte[] buffer = BitConverter.GetBytes(amount);
             ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _treasuryMemoryAddress, buffer, buffer.Length, out _);
+        }
+
+        public void OverrideSwissBankAccount(float amount)
+        {
+            byte[] buffer = BitConverter.GetBytes(amount);
+            ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _swissBankAccountAddress, buffer, buffer.Length, out _);
         }
 
         public void Dispose()
