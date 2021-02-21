@@ -1,6 +1,6 @@
 
 [![License](https://img.shields.io/github/license/douglasdrf/tropico6moneytrainer?style=plastic)](https://github.com/DouglasDRF/Tropico6MoneyTrainer/blob/master/LICENSE)
-[![CI](https://img.shields.io/github/workflow/status/douglasdrf/tropico6moneytrainer/.NET%20Core%20Desktop?style=plastic)](https://github.com/automapper/automapper/workflows/CI)
+[![CI](https://img.shields.io/github/workflow/status/douglasdrf/tropico6moneytrainer/.NET%20Core%20Desktop?style=plastic)](https://github.com/DouglasDRF/Tropico6MoneyTrainer/actions)
 [![GitHub Release](https://img.shields.io/github/v/release/douglasdrf/tropico6moneytrainer?include_prereleases&style=plastic)](https://github.com/DouglasDRF/Tropico6MoneyTrainer/releases/)
 
 
