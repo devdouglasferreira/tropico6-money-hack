@@ -7,15 +7,20 @@ namespace Tropico6MoneyTrainer.Core
 {
     public class Tropico6MemoryProcessWriter : IDisposable
     {
-        private readonly int _treasuryFirstOffset = 0x03CE4AD0;
-        private readonly int[] _treasuryOffsets = { 0x30, 0x8F0, 0xE30, 0x498, 0x3B8, 0x230, 0x9D8 };
+        private const int TreasuryFirstOffset = 0x03CE4AD0;
+        private const int SwissBankAccountFirstOffset = 0x03BE0B00;
 
-        private readonly int _swissBankAccountFirstOffset = 0x03BE0B00;
+        private readonly int[] _treasuryOffsets = { 0x30, 0x8F0, 0xE30, 0x498, 0x3B8, 0x230, 0x9D8 };
         private readonly int[] _swissBankAccountOffsets = { 0x28, 0xC78, 0x10, 0x1A0, 0x20, 0x238, 0x9E0 };
 
         private Process _gameProcess;
         private IntPtr _treasuryMemoryAddress;
         private IntPtr _swissBankAccountAddress;
+
+        ~Tropico6MemoryProcessWriter()
+        {
+            Dispose(false);
+        }
 
         public bool IsGameLoaded { get; private set; }
         public bool IsTargetAddressesFound { get; private set; }
@@ -35,7 +40,7 @@ namespace Tropico6MoneyTrainer.Core
         {
             try
             {
-                long baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + _treasuryFirstOffset ?? 0;
+                long baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + TreasuryFirstOffset ?? 0;
                 long processingAddress = baseAddress;
 
                 foreach (var offset in _treasuryOffsets)
@@ -43,7 +48,7 @@ namespace Tropico6MoneyTrainer.Core
 
                 _treasuryMemoryAddress = (IntPtr)processingAddress;
 
-                baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + _swissBankAccountFirstOffset ?? 0;
+                baseAddress = _gameProcess?.MainModule?.BaseAddress.ToInt64() + SwissBankAccountFirstOffset ?? 0;
                 processingAddress = baseAddress;
 
                 foreach (var offset in _swissBankAccountOffsets)
@@ -51,11 +56,13 @@ namespace Tropico6MoneyTrainer.Core
 
                 _swissBankAccountAddress = (IntPtr)processingAddress;
 
-                IsTargetAddressesFound = true;
+                CheckTargetEmptiness(GetTreasury(), GetSwissBankAccount());
+
                 return IsTargetAddressesFound;
             }
-            catch 
+            catch
             {
+                IsGameLoaded = false;
                 return IsTargetAddressesFound;
             }
         }
@@ -86,6 +93,16 @@ namespace Tropico6MoneyTrainer.Core
             ExternalMemoryAccess.WriteProcessMemory(_gameProcess.Handle, _swissBankAccountAddress, buffer, buffer.Length, out _);
         }
 
+        public void CheckTargetEmptiness(float trearsuryValue, float swissBankValue)
+        {
+            const float tolerance = 0.01f;
+            
+            if (!(Math.Abs(trearsuryValue - 0) > tolerance || Math.Abs(swissBankValue - 0) > tolerance))
+                IsTargetAddressesFound = false;
+            else
+                IsTargetAddressesFound = true;
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -106,11 +123,6 @@ namespace Tropico6MoneyTrainer.Core
             _gameProcess.Dispose();
             _treasuryMemoryAddress = IntPtr.Zero;
             _swissBankAccountAddress = IntPtr.Zero;
-        }
-
-        ~Tropico6MemoryProcessWriter()
-        {
-            Dispose(false);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Tropico6MoneyTrainer.Core;
 using Tropico6MoneyTrainer.ViewModels.Abstractions;
 
@@ -9,8 +9,8 @@ namespace Tropico6MoneyTrainer.ViewModels
 {
     public class MainWindowViewModel : BaseViewModel, IDisposable
     {
-        private readonly Timer _setupTimer, _updateTimer;
-        private Tropico6MemoryProcessWriter _trainer;
+        private readonly DispatcherTimer _setupTimer, _updateTimer;
+        private readonly Tropico6MemoryProcessWriter _trainer;
 
         private ICommand _increaseTreasuryCommand;
         private ICommand _increaseSwissBankCommand;
@@ -19,23 +19,20 @@ namespace Tropico6MoneyTrainer.ViewModels
         {
             _trainer = new Tropico6MemoryProcessWriter();
 
-            _setupTimer = new Timer { AutoReset = true, Interval = 10 * 1000 };
-            _setupTimer.Elapsed += (s, e) =>
-            {
-                if (!_trainer.IsSetupComplete)
-                    TryLoadProcessAndTargetMemoryAddress();
-                else
-                {
-                    _setupTimer.Stop();
-                    _updateTimer.Start();
-                }
-            };
+            _setupTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.CurrentDispatcher);
+            _setupTimer.Interval = new TimeSpan(0, 0, 0, 3);
+            _setupTimer.Tick += UpdateSetupStatus;
             _setupTimer.Start();
 
-            _updateTimer = new Timer { AutoReset = true, Interval = 1000 };
-            _updateTimer.Elapsed += (s, e) => UpdateGameValues();
+            _updateTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher.CurrentDispatcher);
+            _updateTimer.Interval = new TimeSpan(0, 0, 0, 1);
+            _updateTimer.Tick += UpdateGameValues;
 
             TryLoadProcessAndTargetMemoryAddress();
+        }
+        ~MainWindowViewModel()
+        {
+            Dispose(false);
         }
 
         public SolidColorBrush StatusTextColor { get; set; }
@@ -44,26 +41,64 @@ namespace Tropico6MoneyTrainer.ViewModels
         public float SwissBank { get; set; }
         public float TreasuryIncrease { get; set; }
         public float SwissBankIncrease { get; set; }
+        public bool IsReady { get; set; }
 
-        public bool TryLoadProcessAndTargetMemoryAddress()
+        public ICommand IncreaseTreasuryCommand => _increaseTreasuryCommand ??= new CommandHandler(IncreaseTreasury, () => true);
+        public ICommand IncreaseSwissBankCommand => _increaseSwissBankCommand ??= new CommandHandler(IncreaseSwissBank, () => true);
+
+        private void TryLoadProcessAndTargetMemoryAddress()
         {
             if (!_trainer.IsGameLoaded)
                 _ = _trainer.TryLoadProcess();
 
-            if (!_trainer.IsTargetAddressesFound)
+            if (_trainer.IsGameLoaded && !_trainer.IsTargetAddressesFound)
                 _ = _trainer.TryGetTargetMemoryPointers();
 
             UpdateStatusText();
-
-            return _trainer.IsGameLoaded & _trainer.IsTargetAddressesFound;
         }
 
-        public void UpdateGameValues()
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void UpdateStatusText()
+        {
+            if (!_trainer.IsGameLoaded)
+            {
+                StatusTextColor = new SolidColorBrush(Colors.Red);
+                StatusMessage = StatusMessages.GameNotLoaded;
+                IsReady = false;
+
+            }
+            else if (_trainer.IsGameLoaded && !_trainer.IsTargetAddressesFound)
+            {
+                StatusTextColor = new SolidColorBrush(Color.FromRgb(255, 192, 0));
+                StatusMessage = StatusMessages.ScenarioMemoryTargetNotFound;
+                IsReady = false;
+            }
+            else
+            {
+                StatusTextColor = new SolidColorBrush(Colors.ForestGreen);
+                StatusMessage = StatusMessages.Success;
+                IsReady = true;
+                UpdateGameValues();
+            }
+
+            OnPropertyChanged(nameof(IsReady));
+            OnPropertyChanged(nameof(StatusMessage));
+            OnPropertyChanged(nameof(StatusTextColor));
+        }
+
+        private void UpdateGameValues()
         {
             if (_trainer.IsSetupComplete)
             {
                 Treasury = _trainer.GetTreasury();
                 SwissBank = _trainer.GetSwissBankAccount();
+                _trainer.CheckTargetEmptiness(Treasury, SwissBank);
                 OnPropertyChanged(nameof(Treasury));
                 OnPropertyChanged(nameof(SwissBank));
             }
@@ -77,38 +112,9 @@ namespace Tropico6MoneyTrainer.ViewModels
             }
         }
 
-        public void UpdateStatusText()
+        private void UpdateGameValues(object sender, EventArgs args)
         {
-            if (!_trainer.IsGameLoaded)
-            {
-                StatusTextColor = new SolidColorBrush(Colors.Red);
-                StatusMessage = StatusMessages.GameNotLoaded;
-
-            }
-            else if (_trainer.IsGameLoaded && !_trainer.IsTargetAddressesFound)
-            {
-                StatusTextColor = new SolidColorBrush(Color.FromRgb(255, 192, 0));
-                StatusMessage = StatusMessages.ScenarioMemoryTargetNotFound;
-            }
-            else
-            {
-                StatusTextColor = new SolidColorBrush(Colors.ForestGreen);
-                StatusMessage = StatusMessages.Success;
-                UpdateGameValues();
-            }
-
-            OnPropertyChanged(nameof(StatusMessage));
-            OnPropertyChanged(nameof(StatusTextColor));
-        }
-        
-        public ICommand IncreaseTreasuryCommand => _increaseTreasuryCommand ??= new CommandHandler(IncreaseTreasury, () => true);
-
-        public ICommand IncreaseSwissBankCommand => _increaseSwissBankCommand ??= new CommandHandler(IncreaseSwissBank, () => true);
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            UpdateGameValues();
         }
         private void IncreaseTreasury()
         {
@@ -123,17 +129,23 @@ namespace Tropico6MoneyTrainer.ViewModels
             OnPropertyChanged(nameof(SwissBank));
         }
 
+        private void UpdateSetupStatus(object sender, EventArgs args)
+        {
+            if (!_trainer.IsSetupComplete)
+                TryLoadProcessAndTargetMemoryAddress();
+            else
+            {
+                _setupTimer.Stop();
+                _updateTimer.Start();
+            }
+        }
+
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _setupTimer.Dispose();
                 _trainer.Dispose();
             }
-        }
-        ~MainWindowViewModel()
-        {
-            Dispose(false);
         }
     }
 }
