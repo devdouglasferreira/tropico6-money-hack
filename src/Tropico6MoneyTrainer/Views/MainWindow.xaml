@@ -27,7 +27,7 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="../Resources/Tropico_6_Logo.jpg" Stretch="Fill"/>
+        <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="/Resources/tropico6-banner.jpg" Stretch="Fill"/>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
             <TextBlock Margin="0, 10, 0, 10" TextWrapping="Wrap" HorizontalAlignment="Center" Text="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" TextAlignment="Left" />
