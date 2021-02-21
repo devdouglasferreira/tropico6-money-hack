@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore Tropico6MoneyTrainer.sln
+      run: dotnet restore src/Tropico6MoneyTrainer.sln
     - name: Build
-      run: dotnet build Tropico6MoneyTrainer.sln --no-restore
+      run: dotnet build src/Tropico6MoneyTrainer.sln --no-restore
 
