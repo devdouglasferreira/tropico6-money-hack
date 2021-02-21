@@ -2,8 +2,8 @@
 {
     public static class StatusMessages
     {
-        public static string GameNotLoaded = "Game is not loaded";
-        public static string ScenarioMemoryTargetNotFound = "Scenario memory target is not loaded";
-        public static string Success = "Load Sucessful!";
+        public static readonly string GameNotLoaded = "Game is not loaded";
+        public static readonly string ScenarioMemoryTargetNotFound = "Scenario not loaded";
+        public static readonly string Success = "Load Sucessful!";
     }
 }

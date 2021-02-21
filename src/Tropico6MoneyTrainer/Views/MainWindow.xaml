@@ -27,14 +27,14 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="../Resources/Tropico_6_Logo.jpg" Stretch="Fill"/>
+        <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Source="/Resources/tropico6-banner.jpg" Stretch="Fill"/>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
             <TextBlock Margin="0, 10, 0, 10" TextWrapping="Wrap" HorizontalAlignment="Center" Text="{Binding Path=StatusMessage}" Foreground="{Binding Path=StatusTextColor}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" TextAlignment="Left" />
 
             <TextBlock HorizontalAlignment="Center" TextAlignment="Left" Text="{Binding Path=Treasury, StringFormat=Treasury ${0:f0}}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}"  />
-            <TextBox  Margin="2" HorizontalAlignment="Center" Text="{Binding Path=TreasuryIncrease, Mode=TwoWay}" MinWidth="96"></TextBox>
-            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseTreasuryCommand}">
+            <TextBox  Margin="2" HorizontalAlignment="Center" Text="{Binding Path=TreasuryIncrease, Mode=TwoWay}" MinWidth="96" IsEnabled="{Binding Path=IsReady, Mode=OneWay}"></TextBox>
+            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseTreasuryCommand}" IsEnabled="{Binding Path=IsReady, Mode=OneWay}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>
@@ -44,8 +44,8 @@
             </Button>
 
             <TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" TextAlignment="Left" Text="{Binding Path=SwissBank, StringFormat=Swiss Bank S${0:f0}}" FontFamily="Bahnschrift" FontSize="18" DataContext="{Binding Mode=OneWay}" />
-            <TextBox Margin="2" HorizontalAlignment="Center" Text="{Binding Path=SwissBankIncrease, Mode=TwoWay, StringFormat={}{0:F2}}" MinWidth="96"></TextBox>
-            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseSwissBankCommand}">
+            <TextBox Margin="2" HorizontalAlignment="Center" Text="{Binding Path=SwissBankIncrease, Mode=TwoWay, StringFormat={}{0:F2}}" IsEnabled="{Binding Path=IsReady, Mode=OneWay}" MinWidth="96"></TextBox>
+            <Button Margin="2" Padding ="5" HorizontalAlignment="Center" Background="White" Command="{Binding Path=IncreaseSwissBankCommand}" IsEnabled="{Binding Path=IsReady, Mode=OneWay}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="5"/>

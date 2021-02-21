@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Tropico6MoneyTrainer.Annotations;
 
 namespace Tropico6MoneyTrainer.ViewModels.Abstractions
 {
@@ -8,7 +7,6 @@ namespace Tropico6MoneyTrainer.ViewModels.Abstractions
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
